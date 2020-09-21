@@ -1,0 +1,203 @@
+### os
+FROM ubuntu:bionic
+ENV DEBIAN_FRONTEND noninteractive
+
+### apt
+RUN apt-get -y update && \
+  apt-get install -y --no-install-recommends --fix-missing \
+  build-essential \
+  libsqlite3-dev \
+  libmysql++-dev \
+  libboost-iostreams-dev \
+  zlib1g-dev \
+  libgsl-dev \
+  libboost-all-dev \
+  libsuitesparse-dev \
+  liblpsolve55-dev \
+  libbamtools-dev \
+  cmake \
+  autoconf \
+  libbz2-dev \
+  liblzma-dev \
+  libncurses5-dev \
+  python3-pip \
+  curl \
+  wget \
+  git \
+  libtypes-uri-perl \
+  libtest-lwp-useragent-perl \
+  unzip \
+  locales
+
+### cpan
+RUN curl -L https://cpanmin.us -k | perl - App::cpanminus
+RUN cpanm \
+  Hash::Merge \
+  Logger::Simple \
+  Parallel::ForkManager \
+  MCE::Mutex \
+  threads \
+  YAML \
+  Thread::Queue \
+  File::Spec::Functions \
+  List::Util \
+  Module::Load::Conditional \
+  POSIX \
+  Scalar::Util::Numeric \
+  Math::Utils \
+  File::HomeDir \
+  List::MoreUtils \
+  URI \
+  LWP::UserAgent \
+  Text::Soundex \
+  Tie::File \
+  Getopt::Long \
+  File::Copy \
+  File::Path \
+  Data::Dumper \
+  Cwd \
+  JSON \
+  File::Which \
+  Storable \
+  --force
+
+### python
+RUN pip3 install biopython
+
+RUN sed -i -e 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen \
+    && dpkg-reconfigure locales \
+    && update-locale LANG=en_US.UTF-8
+ENV LANG en_US.UTF-8
+ENV LANGUAGE en_US:en  
+ENV LC_ALL en_US.UTF-8   
+
+### Add, download, install programs
+
+RUN mkdir /TOOLS
+
+## From machine ...
+
+# trf
+ADD EXEC/trf /TOOLS/
+ENV PATH "$PATH:/TOOLS"
+
+# GeneMark
+ADD EXEC/gmes_linux_64.tar.gz /TOOLS/
+RUN cp /TOOLS/gmes_linux_64/gm_key ~/.gm_key
+ENV PATH "$PATH:/TOOLS/gmes_linux_64"
+
+## wget
+
+# hisat2
+RUN wget https://cloud.biohpc.swmed.edu/index.php/s/hisat2-220-Linux_x86_64/download -O hisat2-220-Linux_x86_64.zip \
+  && unzip hisat2-220-Linux_x86_64.zip -d /TOOLS/ \
+  && rm /hisat2-220-Linux_x86_64.zip
+ENV PATH "$PATH:/TOOLS/hisat2-2.2.0"
+
+# rmblast
+RUN wget http://www.repeatmasker.org/rmblast-2.10.0+-x64-linux.tar.gz \
+  && mkdir /TOOLS/rmblast \
+  && tar -xzvf rmblast-2.10.0+-x64-linux.tar.gz -C /TOOLS/rmblast --strip-components 1 \
+  && rm /rmblast-2.10.0+-x64-linux.tar.gz
+ENV PATH "$PATH:/TOOLS/rmblast"
+
+# RepeatMasker
+RUN wget http://www.repeatmasker.org/RepeatMasker-4.1.0.tar.gz \
+  && mkdir /TOOLS/RepeatMasker \
+  && tar -xzvf RepeatMasker-4.1.0.tar.gz -C  /TOOLS/RepeatMasker --strip-components 1 \
+  && cd /TOOLS/RepeatMasker/ && ./configure \
+    -trf_prgm /TOOLS/trf \
+    -rmblast_dir /TOOLS/rmblast/bin \
+  && rm /RepeatMasker-4.1.0.tar.gz
+ENV PATH "$PATH:/TOOLS/RepeatMasker"
+
+# RECON
+RUN wget http://www.repeatmasker.org/RepeatModeler/RECON-1.08.tar.gz \
+  && mkdir /TOOLS/RECON \
+  && tar -xzvf RECON-1.08.tar.gz -C /TOOLS/RECON --strip-components 1 \
+  && cd /TOOLS/RECON/src/ && make && make install \
+  && sed -i 's/\$path = \"\";/\$path = \"\/WORKSPACE\/TOOLS\/RECON\/bin\";/g' /TOOLS/RECON/scripts/recon.pl \
+  && rm /RECON-1.08.tar.gz
+ENV PATH "$PATH:/TOOLS/RECON"
+
+# RepeatScout
+RUN wget http://www.repeatmasker.org/RepeatScout-1.0.6.tar.gz \
+  && mkdir /TOOLS/RepeatScout \
+  && tar -xzvf RepeatScout-1.0.6.tar.gz -C /TOOLS/RepeatScout --strip-components 1 \
+  && cd /TOOLS/RepeatScout/ && make \
+  && rm /RepeatScout-1.0.6.tar.gz
+ENV PATH "$PATH:/TOOLS/RepeatScout"
+
+# RepeatModeler
+RUN wget http://www.repeatmasker.org/RepeatModeler/RepeatModeler-2.0.1.tar.gz \
+  && mkdir /TOOLS/RepeatModeler \
+  && tar -xzvf RepeatModeler-2.0.1.tar.gz -C /TOOLS/RepeatModeler --strip-components 1 \
+  && cd /TOOLS/RepeatModeler/ \
+  && sed -i 's/|| \$answer eq \"\" //g' configure \
+  && perl ./configure \
+    -rmblast_dir /TOOLS/rmblast/bin \
+    -trf_prgm /TOOLS/trf \
+    -rscout_dir /TOOLS/RepeatScout \
+    -recon_dir /TOOLS/RECON/bin \
+    -repeatmasker_dir /TOOLS/RepeatMasker \
+  && rm /RepeatModeler-2.0.1.tar.gz
+ENV PATH "$PATH:/TOOLS/RepeatModeler"
+
+# SRA Toolkit
+RUN wget https://ftp-trace.ncbi.nlm.nih.gov/sra/sdk/2.9.6/sratoolkit.2.9.6-ubuntu64.tar.gz \
+  && mkdir /TOOLS/sratoolkit \
+  && tar -xzvf sratoolkit.2.9.6-ubuntu64.tar.gz -C /TOOLS/sratoolkit --strip-components 1 \
+  && rm /sratoolkit.2.9.6-ubuntu64.tar.gz
+ENV PATH "$PATH:/TOOLS/sratoolkit/bin"
+
+# GenomeThreader
+RUN wget http://genomethreader.org/distributions/gth-1.7.1-Linux_x86_64-64bit.tar.gz \
+  && mkdir /TOOLS/gth \
+  && tar -xzvf gth-1.7.1-Linux_x86_64-64bit.tar.gz -C /TOOLS/gth --strip-components 1 \
+  && rm /gth-1.7.1-Linux_x86_64-64bit.tar.gz
+ENV PATH "$PATH:/TOOLS/gth/bin"
+
+## git clone
+
+# Augustus
+RUN git clone https://github.com/Gaius-Augustus/Augustus.git /TOOLS/Augustus \
+  && sed -i 's/cd bam2wig/#cd bam2wig/g' /TOOLS/Augustus/auxprogs/Makefile \
+  && cd /TOOLS/Augustus/ && make && make install
+ENV PATH "$PATH:/TOOLS/Augustus/bin"
+ENV PATH "$PATH:/TOOLS/Augustus/scripts"
+ENV AUGUSTUS_CONFIG_PATH=/TOOLS/Augustus/config/
+ENV AUGUSTUS_BIN_PATH=/TOOLS/Augustus/bin/
+ENV AUGUSTUS_SCRIPTS_PATH=/TOOLS/Augustus/scripts/
+
+# ProtHint
+RUN git clone https://github.com/gatech-genemark/ProtHint.git /TOOLS/ProtHint
+ENV PATH "$PATH:/TOOLS/ProtHint/bin"
+ENV PATH "$PATH:/TOOLS/ProtHint/dependencies"
+
+# cdbfasta
+RUN git clone https://github.com/gpertea/cdbfasta.git /TOOLS/cdbfasta \
+  && cd /TOOLS/cdbfasta/ && make
+ENV PATH "$PATH:/TOOLS/cdbfasta"
+
+# BRAKER
+RUN git clone https://github.com/Gaius-Augustus/BRAKER.git /TOOLS/BRAKER
+ENV PATH "$PATH:/TOOLS/BRAKER/scripts"
+
+# bamtools
+RUN git clone git://github.com/pezmaster31/bamtools.git /TOOLS/bamtools \
+  && mkdir /TOOLS/bamtools/build \
+  && cd /TOOLS/bamtools/build/ && cmake .. && make && make install
+
+# htslib
+RUN git clone https://github.com/samtools/htslib.git /TOOLS/htslib \
+  && cd /TOOLS/htslib/ && autoheader && autoconf && ./configure && make && make install
+
+# samtools
+RUN git clone https://github.com/samtools/samtools.git /TOOLS/samtools \
+  && cd /TOOLS/samtools/ && autoheader && autoconf -Wno-syntax && ./configure && make && make install
+
+### Setup directory structure
+RUN mkdir /WORKSPACE
+VOLUME /WORKSPACE
+WORKDIR /WORKSPACE
+
