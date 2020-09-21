@@ -1,0 +1,34 @@
+### os
+FROM ubuntu:bionic
+ENV DEBIAN_FRONTEND noninteractive
+
+### apt
+RUN apt-get -y update \
+  && apt-get install -y --no-install-recommends --fix-missing \
+  build-essential \
+  bzip2 \
+  file \
+  libbz2-dev \
+  libboost-dev \
+  python2.7 \
+  wget \
+  zlib1g-dev
+
+### Add, download, install programs
+
+RUN mkdir /TOOLS
+
+ADD run_masurca.sh /TOOLS
+
+# masurca
+RUN wget https://github.com/alekseyzimin/masurca/releases/download/v3.3.7/MaSuRCA-3.3.7.tar.gz --no-check-certificate \
+  && mkdir /TOOLS/masurca \
+  && tar -xzvf MaSuRCA-3.3.7.tar.gz -C /TOOLS/masurca --strip-components 1 \
+  && cd /TOOLS/masurca/ && ./install.sh
+ENV PATH "$PATH:/TOOLS/masurca/bin"
+
+### Setup directory structure
+RUN mkdir /WORKSPACE
+VOLUME /WORKSPACE
+WORKDIR /WORKSPACE
+

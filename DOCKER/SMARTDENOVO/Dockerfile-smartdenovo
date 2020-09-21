@@ -1,0 +1,53 @@
+### os
+FROM ubuntu:bionic
+ENV DEBIAN_FRONTEND noninteractive
+
+### apt
+RUN apt-get -y update \
+  && apt-get install -y --no-install-recommends --fix-missing \
+  build-essential \
+  default-jre \
+  git \
+  libncurses5-dev \
+  libbz2-dev \
+  liblzma-dev \
+  wget \
+  zlib1g-dev
+
+### Add, download, install programs
+
+RUN mkdir /TOOLS
+
+ADD run_smartdenovo.sh /TOOLS
+
+## wget
+
+# pilon
+RUN wget https://github.com/broadinstitute/pilon/releases/download/v1.23/pilon-1.23.jar -O /TOOLS/pilon-1.23.jar
+ENV PATH "$PATH:/TOOLS"
+
+# samtools
+RUN wget https://github.com/samtools/samtools/releases/download/1.10/samtools-1.10.tar.bz2 \
+  && mkdir /TOOLS/samtools \
+  && tar -xvjf samtools-1.10.tar.bz2 -C /TOOLS/samtools --strip-components 1 \
+  && cd /TOOLS/samtools/ && ./configure && make install \
+  && rm /samtools-1.10.tar.bz2
+
+## git clone
+
+# smartdenovo
+RUN git clone https://github.com/ruanjue/smartdenovo.git /TOOLS/smartdenovo \
+  && sed -i 's/inline int cut_biedge_strgraph2/static int cut_biedge_strgraph2/' /TOOLS/smartdenovo/wtlay.h \
+  && cd /TOOLS/smartdenovo/ && make
+ENV PATH "$PATH:/TOOLS/smartdenovo"
+
+# minimap2
+RUN git clone https://github.com/lh3/minimap2 /TOOLS/minimap2 \
+  && cd /TOOLS/minimap2/ && make
+ENV PATH="$PATH:/TOOLS/minimap2"
+
+### Setup directory structure
+RUN mkdir /WORKSPACE
+VOLUME /WORKSPACE
+WORKDIR /WORKSPACE
+
