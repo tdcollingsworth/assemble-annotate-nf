@@ -31,5 +31,5 @@ Collect read data (short reads, forward and reverse, as well as long reads "\*.f
 Place in "DATA/" directory and edit "\*.nf" parameters.
 
 ```
-nextflow run unicycler_assemble-annotate.nf -c CONFIG/unicycler.config
+nextflow run masurca_assemble-annotate.nf -c CONFIG/masurca.config
 ```
