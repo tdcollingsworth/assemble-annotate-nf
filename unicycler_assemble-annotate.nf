@@ -6,14 +6,10 @@ params.reverse_reads = "${launchDir}/DATA/atcc2001_S12_L001_R2_001.fastq.gz"
 params.long_reads = "${launchDir}/DATA/atcc2001_nanopore.fastq.gz"
 params.reference = "${launchDir}/DATA/GCF_000002545.3_ASM254v2_protein.faa" 
 
-forward_ch = Channel
-                 .fromPath(params.forward_reads)
-reverse_ch = Channel
-                 .fromPath(params.reverse_reads)
-nanopore_ch = Channel
-                 .fromPath(params.long_reads)
-reference_ch = Channel
-                 .fromPath(params.reference)
+forward_ch = Channel.fromPath(params.forward_reads)
+reverse_ch = Channel.fromPath(params.reverse_reads)
+nanopore_ch = Channel.fromPath(params.long_reads)
+reference_ch = Channel.fromPath(params.reference)
 
 // Processes
 
