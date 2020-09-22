@@ -24,7 +24,12 @@ https://github.com/Gaius-Augustus/BRAKER
 docker build --no-cache -t collingswortht/dev_annotate -f DOCKER/ANNOTATE/annotate_dockerfile .
 ```
 
-## Example run command:
+## Example run:
+
+Collect read data (forward and reverse short reads as well as long reads "\*.fastq.gz") and a reference fasta ("\*.faa").
+
+Place in "DATA/" directory and edit "\*.nf" parameters.
+
 ```
-nextflow run unicycler_assemble-annotate.nf -c CONFIG/unicycler.config
+nextflow run unicycler_assemble-annotate.nf -c CONFIG/unicycler.config --
 ```
