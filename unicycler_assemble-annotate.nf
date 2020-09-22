@@ -42,18 +42,21 @@ process annotate {
     file "augustus.hints.gtf" into annotation_ch
 
     """
-    ## Simplify reference '.faa' headers ...
+    # Output directroy
+    mkdir BRAKER ; cd BRAKER/
+
+    # Simplify reference '.faa' headers ...
     simplifyFastaHeaders.pl ${reference} protein_aa_ protein_aa.fa protein_aa_header.map
     
-    ## Soft mask the draft genome ...
+    # Soft mask the draft genome ...
     BuildDatabase -engine ncbi -name assembly ${assembly}
     RepeatModeler -database assembly -engine ncbi -pa ${task.cpus}
     RepeatMasker -pa ${task.cpus} -e ncbi -s -xsmall -lib assembly-families.fa ${assembly}
     
-    ## Simplify masked assembly '.fasta' headers ...
+    # Simplify masked assembly '.fasta' headers ...
     simplifyFastaHeaders.pl assembly.fasta.masked assembly_ assembly.fa assembly_header.map
     
-    ## Run BRAKER
+    # Run BRAKER
     braker.pl --genome=/WORKSPACE/assembly.fa --prot_seq=/WORKSPACE/protein_aa.fa --prg=gth --trainFromGth --softmasking --species=assembly --verbosity=4 --workingdir=/WORKSPACE/ANNOTATE/ --nocleanup --cores=${task.cpus}
     """
 }
