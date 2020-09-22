@@ -26,7 +26,7 @@ docker build --no-cache -t collingswortht/dev_annotate -f DOCKER/ANNOTATE/annota
 
 ## Example run:
 
-Collect read data (forward and reverse short reads as well as long reads "\*.fastq.gz") and a reference fasta ("\*.faa").
+Collect read data (short reads, forward and reverse, as well as long reads "\*.fastq.gz") and a reference fasta ("\*.faa").
 
 Place in "DATA/" directory and edit "\*.nf" parameters.
 
