@@ -23,7 +23,7 @@ process masurca {
     file nanopore from nanopore_ch
 
     output:
-    file "assembly.fasta" into assembly_ch
+    file "flye/assembly.fasta" into assembly_ch
 
     """
     # Output directroy
