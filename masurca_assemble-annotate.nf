@@ -1,6 +1,7 @@
 #!/usr/bin/env nextflow
 
 // Script parameters
+
 params.forward_reads = "${launchDir}/DATA/atcc2001_S12_L001_R1_001.fastq.gz"
 params.reverse_reads = "${launchDir}/DATA/atcc2001_S12_L001_R2_001.fastq.gz"
 params.long_reads = "${launchDir}/DATA/nanopore.fasta"
