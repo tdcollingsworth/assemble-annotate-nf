@@ -34,6 +34,7 @@ process masurca {
     sed -i "s|JUMP= sh 3600 200 |#JUMP= sh 3600 200 |g" config.txt
     sed -i "s|#NANOPORE=/FULL_PATH/nanopore.fa|NANOPORE=${launchDir}/DATA/${nanopore}|g" config.txt
     sed -i "s|EXTEND_JUMP_READS=0|#EXTEND_JUMP_READS=0|g" config.txt
+    sed -i "s|NUM_THREADS = 16|NUM_THREADS = ${task.cpus}" config.txt
     sed -i "s|FLYE_ASSEMBLY=0|FLYE_ASSEMBLY=1|g" config.txt
     cat config.txt
     # Set up masurca and run    
