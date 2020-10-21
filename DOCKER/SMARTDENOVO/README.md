@@ -1,4 +1,4 @@
 # Build Docker image
 ```
-docker build --no-cache -t collingswortht/dev_smartdenovo -f Dockerfile-smartdenovo .
+docker build --no-cache -t collingswortht/smartdenovo -f Dockerfile-smartdenovo .
 ```
