@@ -1,4 +1,4 @@
 # Build Docker image
 ```
-docker build --no-cache -t collingswortht/dev_unicycler -f Dockerfile-unicycler .
+docker build --no-cache -t collingswortht/unicycler -f Dockerfile-unicycler .
 ```
