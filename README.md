@@ -1,4 +1,4 @@
-:warning: Still in early development
+:warning: In Development
 
 # Unicycler
 https://github.com/rrwick/Unicycler
